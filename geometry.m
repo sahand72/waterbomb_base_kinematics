@@ -1,41 +1,72 @@
+% waterbomb_geometry_simulation
 clear
 clc
 
-n=3; %number of valley/mountain folds
+n=3;
+alpha=pi/n;
+beta=2*alpha;
+r=1;
+theta=pi/2;
 
-alpha=pi/n;         %sector angles
-beta=(2*pi)/n;      %angle between two identical folds
+d=acos((cos(theta)).^2+cos(beta).*(sin(theta)).^2);
+gamma1=acos(cos(alpha)./cos(d/2));
+gamma2=acos(cos(theta)./cos(d/2));
 
-theta=linspace(pi/180,pi-alpha,500);  %angle between the valley fold and the vertical axis
+gamma=gamma1+gamma2;
+rho_vector=0:.1:r;
+T_vector=0:alpha:2*pi;
 
-d=acos((cos(theta)).^2+cos(beta)*(sin(theta)).^2);
-
-gamma_mountain=-pi+acos(1+(cos(d)-1)/((sin(alpha)).^2));
-
-for theta_counter=1:length(theta)
+for i=1:2*n
     
-    if theta(theta_counter)<=pi/2
-        
-        gamma_valley(theta_counter)=-pi+2*acos(cot(alpha)*tan(d(theta_counter)/2))+2*acos(cot(theta(theta_counter))*tan(d(theta_counter)/2));
-        
+    if rem(i,2)==1
+        Phi=theta-pi/2;
     else
-        
-        gamma_valley(theta_counter)=pi-2*acos((cos(d(theta_counter))-1)*(cot(theta(theta_counter))/(sin(d(theta_counter)))))+2*acos(cot(alpha)*tan(d(theta_counter)/2));
-        
+        Phi=gamma-pi/2;
     end
+    
+    for j=1:length(rho_vector)
+        [x,y,z]=sph2cart(T_vector(i),Phi,rho_vector(j));
+        X(i,j)=x;
+        Y(i,j)=y;
+        Z(i,j)=z;        
+    end
+    
+    
     
 end
 
-figure(1)
-plot(radtodeg(gamma_mountain),radtodeg(gamma_valley),'LineWidth',2)
-xlabel('gamma_ mountain')
-ylabel('gamma- valley')
+figure
+for ii=1:2*n
+      
+    if ii==2*n
+        jj=1;
+    else
+        jj=ii+1;
+        
+    end
+    
+    x_fill = [X(ii,:) fliplr(X(jj,:))];
+    y_fill = [Y(ii,:) fliplr(Y(jj,:))];
+    z_fill = [Z(ii,:) fliplr(Z(jj,:))];
+    
+        
+    if rem(ii,2)==1
+       
+        fill3(x_fill,y_fill,z_fill, 'r');
+        hold on
+    
+    else
+        
+        fill3(x_fill,y_fill,z_fill, 'b');
+        hold on
+        
+    end
+        
+    
+    
 
+end
 
-figure(2)
-plot(radtodeg(theta),-radtodeg(gamma_mountain),'LineWidth',2)
-hold on
-plot(radtodeg(theta),radtodeg(gamma_valley),'LineWidth',2)
-
-xlabel('theta')
-legend('gamma_ mountain','gamma_ valley')
+xlabel('x')
+ylabel('y')
+zlabel('z')
